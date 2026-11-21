@@ -9,7 +9,7 @@ All three methods answer the same question: \emph{among patients who received th
 
 \begin{xltabular}{\textwidth}{L{2.6cm}YYY}
 \toprule
- & \textbf{Target trial emulation with exact matching} & \textbf{S-learner} & \textbf{Doubly robust causal forest} \\
+ & \textbf{Target trial emulation with matching} & \textbf{S-learner} & \textbf{Doubly robust causal forest} \\
 \midrule
 Core idea & Pair each treated patient with an identical untreated patient & One prediction model; ask it ``what if this patient had not been treated?'' & Remove the predictable part of treatment and outcome, then learn the effect from what is left \\
 Adjusts for & A few key confounders, exactly & Many confounders, flexibly & Many confounders, flexibly, using two separate models (one predicting outcome, one predicting treatment) \\
@@ -19,4 +19,4 @@ Typical software & pandas, statsmodels & XGBoost \cite{chen2016xgboost}, Optuna 
 \bottomrule
 \end{xltabular}
 
-A \emph{confounder} is a factor, such as disease severity or frailty, that influences both whether a patient is treated and how they fare. No method can adjust for confounders that were not measured. Each method section therefore lists the sensitivity analyses that probe this, and the shared tools for unmeasured confounding are explained once, in Section~\ref{sec:shared}. Worked examples of all three methods, applied to stroke treatment, are in the SAMueL-3 repository \cite{samuel3}. Technical terms are defined in the glossary (Section~\ref{sec:glossary}).
+A \emph{confounder} is a factor, such as disease severity or frailty, that influences both whether a patient is treated and how they fare. No method can adjust for confounders that were not measured. Each method section therefore lists the sensitivity analyses that probe this, and the shared tools for unmeasured confounding are explained once, in Section~\ref{sec:shared}. Worked examples of all three methods, applied to stroke treatment, are in the SAMueL-3 repository \cite{samuel3}. Technical terms are defined in the glossary (Section~\ref{sec:glossary}), and other methods that we have not used are outlined in Section~\ref{sec:other_methods}.

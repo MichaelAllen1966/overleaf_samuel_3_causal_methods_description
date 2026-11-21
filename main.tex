@@ -9,6 +9,7 @@
 \usepackage{xltabular}
 \usepackage{array}
 \usepackage{enumitem}
+\usepackage[skip=8pt plus 2pt minus 1pt]{parskip} % space between paragraphs, no indent
 \usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,fit,backgrounds,calc}
@@ -41,6 +42,31 @@
 
 \begin{document}
 \maketitle
+\begin{abstract}
+\setlength{\parindent}{0pt}\setlength{\parskip}{6pt plus 2pt}% match body paragraph spacing
+\noindent This guide is for analysts and clinicians who want to estimate the effect of a treatment from routinely collected (observational) data. It is not tied to one clinical area. In this guide, ``treatment'' can mean any intervention, drug, procedure or care pathway, and ``outcome'' any result of interest.
+
+The guide describes three methods that work in different ways and answer the same question: among patients who received a treatment, how much did it change their chance of a good outcome?
+\begin{enumerate}
+\item \textbf{Target trial emulation with matching.} Each treated patient is compared with a similar untreated patient. This is transparent and easy to explain to clinicians. The guide covers both exact and non-exact matching, including propensity-score, Mahalanobis, full and risk-set matching.
+\item \textbf{The S-learner.} A single prediction model is asked what would have happened to each patient with and without treatment. It can adjust for many confounders and for treatment timing.
+\item \textbf{The doubly robust causal forest.} This uses double/debiased machine learning, which estimates individual treatment effects and stays reliable if either the treatment model or the outcome model is correct.
+\end{enumerate}
+For each method, the guide sets out how it works, the analysis steps, how to interpret the result, sensitivity analyses the authors have used, and further analyses that could be run.
+
+Shared sections cover core concepts (the target trial framework, estimands such as the ATE, ATT and CATE, the assumptions every method needs, and choosing confounders); tools for assessing unmeasured and measured confounding (E-values, sensemakr robustness values, and leaving out one measured confounder at a time); a recommended workflow for choosing and combining the methods; and a plain-language glossary of more than 150 terms.
+
+A final section briefly describes other methods, with their advantages and disadvantages, including the g-formula, TMLE, BART and designs that can allow for unmeasured confounding, such as instrumental variables and difference-in-differences.
+
+The guide was developed in the SAMueL-3 project, alongside analyses of thrombolysis and thrombectomy in stroke using national audit data (SSNAP).
+
+\medskip
+\noindent\textbf{Keywords:} causal inference; target trial emulation; observational data; treatment effects; matching; propensity score; S-learner; meta-learners; causal forest; double machine learning; doubly robust estimation; sensitivity analysis; E-value; unmeasured confounding
+
+\medskip
+\noindent\textbf{How to cite this guide:} Allen, M. (2026). \emph{Causal Inference Methods Guide: Measuring treatment effects from observational data}. Zenodo. \href{https://doi.org/10.5281/zenodo.24426809}{doi:10.5281/zenodo.24426809} \cite{allen2026guide}.
+\end{abstract}
+\newpage
 \tableofcontents
 \newpage
 
@@ -51,6 +77,7 @@
 \input{sections/05_causal_forest}
 \input{sections/06_confounding_tools}
 \input{sections/07_choosing_methods}
+\input{sections/09_other_methods}
 \input{sections/08_glossary}
 
 \bibliographystyle{unsrtnat}

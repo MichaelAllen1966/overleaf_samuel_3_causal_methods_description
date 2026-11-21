@@ -26,6 +26,9 @@ A measure of discrimination: the probability that a model gives a higher predict
 \item[Balance]
 How similar treated and untreated groups are on baseline characteristics, usually measured by the standardised mean difference.
 
+\item[BART (Bayesian additive regression trees)]
+A Bayesian model that predicts the outcome as the sum of many small decision trees. Used to estimate treatment effects and their uncertainty (Section~\ref{sec:other_methods}).
+
 \item[Benchmark bounds]
 In sensemakr, the adjusted estimate if an unmeasured confounder were one, two or three times as strongly related to treatment and outcome as a named measured covariate.
 
@@ -71,6 +74,9 @@ Exact matching on coarsened (banded) versions of variables, which allows more va
 \item[Comparator]
 The strategy that treatment is compared against, often ``no treatment''.
 
+\item[Complier]
+In an instrumental-variable analysis, a patient whose treatment depends on the instrument: they would be treated with one value of the instrument but not with another. Instrumental-variable estimates apply to compliers.
+
 \item[Confidence interval (CI)]
 A range of values, calculated from the data, that would contain the true value in a stated proportion (usually 95\%) of repeated studies.
 
@@ -110,6 +116,9 @@ One of ten equal-sized groups formed by ranking patients, for example by predict
 \item[Delta method]
 An approximation for the variance of a function of estimated quantities, such as the time at which predicted benefit reaches zero.
 
+\item[Difference-in-differences]
+Estimating the effect of a change by comparing the change in outcomes over time in places that made it with the change in places that did not.
+
 \item[Discrimination]
 How well a model separates patients who have the outcome from those who do not, usually measured by the AUC.
 
@@ -146,6 +155,9 @@ Pairing each treated patient with an untreated patient who has identical values 
 \item[Exchangeability (no unmeasured confounding)]
 The assumption that, after adjusting for measured variables, treated and untreated patients are comparable, so that the untreated represent what would have happened to the treated without treatment.
 
+\item[Exclusion restriction]
+The instrumental-variable assumption that the instrument affects the outcome only through the treatment.
+
 \item[Extrapolation]
 Making predictions for patients unlike any in the data used to fit the model, so that the estimate relies on modelling assumptions rather than data.
 
@@ -163,6 +175,9 @@ Matching that places every eligible patient in a subclass with at least one trea
 
 \item[GATES and CLAN]
 Group average treatment effects (GATES) compare average effects across groups defined by predicted benefit; classification analysis (CLAN) describes the characteristics of the most and least affected groups.
+
+\item[G-formula (g-computation)]
+Estimating a treatment effect by modelling the outcome, predicting each patient's outcome under each treatment strategy, and averaging the predictions. The S-learner is a version of this for treatment at a single time.
 
 \item[Gradient boosting]
 A machine-learning method that builds many small decision trees in sequence, each correcting the errors of the previous ones (implemented in XGBoost and LightGBM).
@@ -191,6 +206,9 @@ A variable that affects which treatment is received but affects the outcome only
 \item[Interference]
 When one patient's treatment affects another patient's outcome. Most analyses assume there is none.
 
+\item[Interrupted time series]
+Estimating the effect of a change by comparing the trend in outcomes before and after it.
+
 \item[Inverse probability weighting]
 Weighting each patient by the inverse of their probability of receiving the treatment they actually received, so that the weighted groups resemble each other.
 
@@ -217,6 +235,9 @@ The logarithm of the odds, $\log\{p/(1-p)\}$. Effects on this scale are log odds
 
 \item[Mahalanobis distance]
 A measure of how far apart two patients are on several variables at once, allowing for the scale of each variable and the correlations between them.
+
+\item[Marginal structural model]
+A model of outcomes under different treatment strategies, fitted with inverse probability weights. Often used when treatments and confounders change over time.
 
 \item[Matching rate]
 The percentage of treated patients for whom a matched control was found.
@@ -293,6 +314,9 @@ Propensity-score weights that give most weight to patients who could plausibly h
 \item[Paired analysis]
 An analysis that compares outcomes within matched pairs, such as McNemar's test, the paired $t$-test or the Wilcoxon signed-rank test.
 
+\item[Parallel trends]
+The difference-in-differences assumption that, without the change, outcomes in the compared groups would have followed the same path over time.
+
 \item[Partial $R^2$]
 The share of the remaining variance of a variable explained by another variable after accounting for the covariates; the scale used by sensemakr.
 
@@ -341,6 +365,9 @@ A number that fixes the sequence of random choices in an analysis, so that resul
 \item[Regression adjustment]
 Including covariates in a regression model of the outcome to remove remaining differences between groups.
 
+\item[Regression discontinuity design]
+Comparing patients just above and just below a threshold that decides treatment (such as a time limit), who are otherwise similar.
+
 \item[Regularisation]
 Penalising model complexity during fitting to reduce overfitting.
 
@@ -358,6 +385,9 @@ The proportion with the outcome in treated patients divided by the proportion in
 
 \item[Risk-set matching]
 Matching each patient treated at a given time to a patient who is still untreated and still eligible at that time. Used when treatment strategies are defined by the timing of treatment.
+
+\item[R-learner]
+A meta-learner that estimates individual treatment effects from the residuals of the outcome and treatment models, which makes it robust to errors in those models.
 
 \item[Robustness value (RV)]
 In sensemakr, the minimum partial $R^2$ an unmeasured confounder would need with both treatment and outcome to reduce the estimate to zero ($RV_\alpha$: to make it no longer statistically significant).
@@ -389,6 +419,12 @@ The estimated standard deviation of an estimate across repeated samples; used to
 \item[Stratum (plural strata)]
 A subgroup of patients who share the same values of the stratifying (for example, matching) variables.
 
+\item[Super Learner]
+A method that combines several machine-learning models, weighted by their cross-validated performance. Often used with TMLE.
+
+\item[Synthetic control]
+A weighted combination of places (such as regions or hospitals) without a change, chosen to match a changed place's outcomes before the change, and used as its comparison afterwards.
+
 \item[TARGET statement]
 Reporting guidance for observational studies that emulate a target trial.
 
@@ -397,6 +433,9 @@ The hypothetical randomised trial that would answer the causal question, whose p
 
 \item[Time zero]
 The point at which eligibility is met, treatment strategies are assigned and follow-up begins. It must be the same for all compared groups.
+
+\item[Time-varying confounding]
+Confounding by factors that change during follow-up and may themselves be affected by earlier treatment.
 
 \item[T-learner (two learner)]
 A meta-learner that fits separate outcome models for treated and untreated patients and takes the difference in their predictions.

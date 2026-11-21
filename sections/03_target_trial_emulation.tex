@@ -1,7 +1,9 @@
 % 03_target_trial_emulation.tex
-\section{Method 1: Target trial emulation with exact matching}
+\section{Method 1: Target trial emulation with matching}
 
 \subsection{How it works}
+
+Treated and untreated patients can be matched exactly, so that each pair is identical on every matching variable, or approximately, so that each pair is similar. In our analyses we used exact matching, which is described in this section. Non-exact matching, which allows more confounders to be included, is described in Section~\ref{sec:tte_nonexact}.
 
 For each treated patient, we find an untreated patient who is identical on the most important confounders, such as age, disease severity and prior disability. We then compare outcomes between the two matched groups. Because each pair looks alike on the factors that drive both treatment and outcome, the untreated partner stands in for what would have happened to the treated patient without treatment.
 
@@ -76,7 +78,7 @@ Measured confounding & Leave each main matching variable out in turn & How much 
 
 \subsection{Non-exact matching}\label{sec:tte_nonexact}
 
-Exact matching works well for a few confounders, but each extra variable splits patients into smaller strata, and treated patients with no identical untreated patient are lost. Continuous variables such as age or stroke severity have to be matched exactly or in bands, which leaves some imbalance within bands. Non-exact matching relaxes ``identical'' to ``close enough'', so that more confounders can be included. The target trial protocol (eligibility, treatment strategies, time zero, outcome) is unchanged; only the way treated and untreated patients are made comparable changes.
+Exact matching works well for a few confounders, but each extra variable splits patients into smaller strata, and treated patients with no identical untreated patient are lost. Continuous variables such as age or disease severity have to be matched exactly or in bands, which leaves some imbalance within bands. Non-exact matching relaxes ``identical'' to ``close enough'', so that more confounders can be included. The target trial protocol (eligibility, treatment strategies, time zero, outcome) is unchanged; only the way treated and untreated patients are made comparable changes.
 
 Common approaches are:
 \begin{itemize}

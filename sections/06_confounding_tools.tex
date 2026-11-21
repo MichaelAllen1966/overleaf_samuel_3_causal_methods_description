@@ -24,7 +24,7 @@ Rough guide (our working convention, not a published threshold): an E-value belo
 
 In plain terms, sensemakr asks how much of the unexplained variation in who was treated, and in who did well, a hidden factor would need to account for to wipe out the effect. It then compares that with known factors such as disease severity, giving a clinically meaningful yardstick: ``a hidden factor as strong as severity would (or would not) overturn the result''. Formally, sensemakr \cite{cinelli2020} describes a hidden confounder by how much of the remaining variance in treatment and in outcome it would explain (partial $R^2$). It needs a linear model, so for each method we fit a linear probability model as a stand-in (outcome $\sim$ treated + the method's confounders) and report:
 \begin{itemize}
-\item \textbf{Robustness value $RV$:} partial $R^2$ a confounder needs with both treatment and outcome to bring the estimate to zero; \textbf{$RV_\alpha$:} to make it non-significant.
+\item \textbf{Robustness value $RV$:} the partial $R^2$ that a confounder would need with both treatment and outcome to bring the estimate to zero. \textbf{$RV_\alpha$} is the same, but to make the estimate no longer statistically significant.
 \item \textbf{Benchmark bounds:} the adjusted estimate if a confounder were 1$\times$, 2$\times$ or 3$\times$ as strong as a named measured covariate (e.g.\ the main severity score).
 \item \textbf{Contour plot} of the adjusted estimate over the two partial $R^2$ values, with benchmarks marked.
 \end{itemize}

@@ -1,0 +1,96 @@
+% 09_other_methods.tex
+\section{Other causal inference methods}\label{sec:other_methods}
+
+This section briefly describes methods that we have not used in this guide but that may suit other questions or data. The first five, like the three main methods, assume that all important confounders have been measured. The last four (instrumental variables, regression discontinuity, difference-in-differences and synthetic control) can allow for unmeasured confounding, but only by replacing that assumption with others that are often just as hard to check.
+
+In the lists below, $+$ marks an advantage and $-$ a disadvantage.
+
+\subsection{Inverse probability weighting and marginal structural models}
+
+Instead of matching, each patient is weighted by the inverse of their probability of receiving the treatment they actually received. This creates a weighted population in which treatment is unrelated to the measured confounders \cite{robins2000msm,hernan2020whatif}. When the weights are recalculated over time, marginal structural models can handle confounders that change during follow-up and are themselves affected by earlier treatment.
+\begin{itemize}
+\item[$+$] Uses all patients rather than discarding unmatched ones, and can handle treatments and confounders that change over time.
+\item[$+$] Easy to explain as a reweighted trial population; balance can be checked as for matching.
+\item[$-$] Unstable when some propensity scores are close to 0 or 1, which gives extreme weights; trimming or truncation is usually needed.
+\item[$-$] Relies entirely on a correct propensity model.
+\end{itemize}
+
+\subsection{G-formula (g-computation)}
+
+An outcome model is fitted, then used to predict every patient's outcome under each treatment strategy, and the predictions are averaged \cite{robins1986gformula,hernan2020whatif}. The S-learner is a machine-learning version of this for treatment at a single time. The parametric g-formula extends it to treatments and confounders that change over time by simulating each patient's history.
+\begin{itemize}
+\item[$+$] Efficient, and can estimate the effect of any strategy, including dynamic ones (for example, ``treat if severity rises above a threshold'').
+\item[$+$] Handles time-varying confounding.
+\item[$-$] Relies entirely on correct outcome models (and, over time, models for every time-varying confounder), and errors build up over follow-up.
+\item[$-$] Computationally demanding and hard to check.
+\end{itemize}
+
+\subsection{Targeted maximum likelihood estimation (TMLE)}
+
+A doubly robust method, like AIPW. It starts from an outcome model and then updates (``targets'') its predictions using the propensity score, so that the final estimate is correct if either model is correct \cite{vanderlaan2006}. It is usually combined with machine learning, through a Super Learner.
+\begin{itemize}
+\item[$+$] Doubly robust and efficient. Estimates stay within the possible range (for example, probabilities between 0 and 1), so it is more stable than AIPW when propensity scores are extreme.
+\item[$+$] Well-developed software (for example, the R packages \texttt{tmle} and, for time-varying treatments, \texttt{ltmle}).
+\item[$-$] Harder to explain than matching or the S-learner.
+\item[$-$] Mainly estimates average effects; individual effects need other methods.
+\end{itemize}
+
+\subsection{Other meta-learners}
+
+The T-learner fits separate outcome models for treated and untreated patients. The X-learner, R-learner and DR-learner combine outcome and propensity models in different ways to estimate individual treatment effects \cite{kunzel2019,nie2021,kennedy2023}.
+\begin{itemize}
+\item[$+$] Can estimate individual effects better than the S-learner when treated and untreated patients differ, or when treatment is uncommon (X-learner).
+\item[$+$] The R-learner and DR-learner, like the causal forest, are robust to errors in the outcome and propensity models.
+\item[$-$] The T-learner's difference between two separate models can be noisy, especially with few treated patients.
+\item[$-$] More choices and tuning, and individual effects are hard to validate because true individual effects are never observed.
+\end{itemize}
+
+\subsection{Bayesian additive regression trees (BART)}
+
+A Bayesian model that predicts the outcome from treatment and confounders as the sum of many small trees, then compares predictions with and without treatment \cite{hill2011bart}. It performs well in benchmark comparisons with little tuning.
+\begin{itemize}
+\item[$+$] Flexible with little tuning, and gives uncertainty (credible intervals) for both average and individual effects directly.
+\item[$+$] Adding the propensity score as a predictor (Bayesian causal forests) reduces bias when confounding is strong.
+\item[$-$] Intervals can be overconfident where treated and untreated patients do not overlap.
+\item[$-$] Slow on very large datasets, and less familiar to clinical audiences.
+\end{itemize}
+
+\subsection{Instrumental variables}
+
+An instrument is something that changes the chance of being treated but affects the outcome only through the treatment, such as distance to a specialist centre or the treating hospital's (or clinician's) preference for the treatment \cite{baiocchi2014}. Comparing patients by their instrument, rather than by the treatment they received, gives an effect estimate that does not need all confounders to be measured.
+\begin{itemize}
+\item[$+$] Can allow for unmeasured confounding, the main weakness of the other methods.
+\item[$+$] Natural instruments often exist in routine data, such as differences in practice between hospitals.
+\item[$-$] The key assumption (the exclusion restriction) cannot be tested: hospitals that treat more often may also differ in other aspects of care.
+\item[$-$] Weak instruments give wide and biased estimates, and the effect applies only to compliers, patients whose treatment depends on the instrument, who cannot be identified.
+\end{itemize}
+
+\subsection{Regression discontinuity}
+
+Where treatment depends on a threshold, such as a time limit or an age cut-off, patients just either side of the threshold are compared, because they are otherwise very similar \cite{imbens2008rdd}.
+\begin{itemize}
+\item[$+$] Close to a randomised comparison near the threshold, and does not need confounders to be measured.
+\item[$+$] Its assumptions can be partly checked, for example by showing there is no jump in baseline characteristics at the threshold.
+\item[$-$] The effect applies only to patients near the threshold.
+\item[$-$] Needs many patients near the threshold, and fails if the measured value can be influenced (for example, times recorded so that they fall inside a limit).
+\end{itemize}
+
+\subsection{Difference-in-differences and interrupted time series}
+
+These designs estimate the effect of a change in service or policy, rather than of treating individual patients. Interrupted time series compares the trend in outcomes before and after a change. Difference-in-differences compares the change over time in places that made the change with the change in places that did not \cite{bernal2017its,wing2018did}.
+\begin{itemize}
+\item[$+$] Suited to evaluating service changes, such as opening a new unit, with routinely collected data.
+\item[$+$] Removes stable differences between places (difference-in-differences) or underlying trends (interrupted time series).
+\item[$-$] Difference-in-differences relies on parallel trends: without the change, outcomes in both groups would have followed the same path. This cannot be checked after the change.
+\item[$-$] Other changes at the same time can be mistaken for the effect, and enough time points are needed before and after.
+\end{itemize}
+
+\subsection{Synthetic control}
+
+For a change made in one or a few places, a weighted combination of places without the change is built to match the changed place's outcomes before the change, and is used as its comparison afterwards \cite{abadie2010synth}.
+\begin{itemize}
+\item[$+$] A transparent, data-driven choice of comparison, suited to single units such as one region or hospital.
+\item[$+$] How well the synthetic control matches before the change shows how good the comparison is.
+\item[$-$] Needs a long run of data before the change and a suitable pool of comparison places.
+\item[$-$] Statistical inference is limited (usually placebo tests), and a poor fit before the change makes the result unreliable.
+\end{itemize}
