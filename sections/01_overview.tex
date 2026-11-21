@@ -1,0 +1,22 @@
+% 01_overview.tex
+\section{Overview}
+
+This guide describes three complementary ways to estimate the effect of a treatment from routinely collected (observational) data, and the sensitivity analyses we use to test them. It is written to apply across clinical domains: wherever it says ``treatment'', read any intervention, drug, procedure or care pathway; wherever it says ``outcome'', read any patient outcome.
+
+All three methods answer the same question: \emph{among patients who received the treatment, how much did it change their chance of the outcome?} They answer it in different ways, with different assumptions, so agreement between them is strong evidence, and disagreement points to where the data or assumptions are fragile.
+
+\paragraph{A simple example.} Suppose 50\% of patients who received a treatment had a good outcome. The question is what that figure would have been if the \emph{same} patients had not been treated. If our best estimate is 40\%, the treatment added 10 percentage points: ten extra good outcomes for every 100 patients treated. All three methods estimate that missing 40\% figure. They differ only in how they build it from similar untreated patients.
+
+\begin{xltabular}{\textwidth}{L{2.6cm}YYY}
+\toprule
+ & \textbf{Target trial emulation with exact matching} & \textbf{S-learner} & \textbf{Doubly robust causal forest} \\
+\midrule
+Core idea & Pair each treated patient with an identical untreated patient & One prediction model; ask it ``what if this patient had not been treated?'' & Remove the predictable part of treatment and outcome, then learn the effect from what is left \\
+Adjusts for & A few key confounders, exactly & Many confounders, flexibly & Many confounders, flexibly, using two separate models (one predicting outcome, one predicting treatment) \\
+Main strength & Transparent; easy to explain to clinicians & Handles continuous treatment timing and dose; flexible & If one of its two models is wrong, the other can compensate; can show who benefits most \\
+Main weakness & Only a handful of confounders can be matched exactly & Relies entirely on one model being right; can shrink effects & Complex; individual effects are noisy \\
+Typical software & pandas, statsmodels & XGBoost \cite{chen2016xgboost}, Optuna \cite{akiba2019optuna}, SHAP \cite{lundberg2017shap} & EconML \texttt{CausalForestDML} \cite{battocchi2019econml}, LightGBM \cite{ke2017lightgbm} \\
+\bottomrule
+\end{xltabular}
+
+A \emph{confounder} is a factor, such as disease severity or frailty, that influences both whether a patient is treated and how they fare. No method can adjust for confounders that were not measured. Each method section therefore lists the sensitivity analyses that probe this, and the shared tools for unmeasured confounding are explained once, in Section~\ref{sec:shared}. Worked examples of all three methods, applied to stroke treatment, are in the SAMueL-3 repository \cite{samuel3}. Technical terms are defined in the glossary (Section~\ref{sec:glossary}).

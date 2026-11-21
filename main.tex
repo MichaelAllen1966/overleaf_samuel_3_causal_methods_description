@@ -1,0 +1,58 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{xltabular}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds,calc}
+\usepackage{caption}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\definecolor{accent}{HTML}{2F6FDE}
+\definecolor{band}{HTML}{F0EFEC}
+
+\tikzset{
+  box/.style={draw=black!45, rounded corners=4pt, align=center, font=\small,
+              inner sep=5pt, minimum height=1.1cm},
+  main/.style={box, draw=accent, line width=1.2pt, fill=accent!10},
+  arr/.style={-{Stealth[length=2.2mm]}, draw=black!55, line width=0.7pt},
+  note/.style={font=\footnotesize\color{black!60}},
+}
+\newcommand{\sub}[1]{{\footnotesize\color{black!60}#1}}
+
+\title{Causal Inference Methods Guide:\\[2pt]
+\large Target Trial Emulation, S-Learner, and Doubly Robust Causal Forest}
+\author{Michael Allen\\ \href{mailto:m.allen@exeter.ac.uk}{\texttt{m.allen@exeter.ac.uk}}}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\input{sections/01_overview}
+\input{sections/02_core_concepts}
+\input{sections/03_target_trial_emulation}
+\input{sections/04_s_learner}
+\input{sections/05_causal_forest}
+\input{sections/06_confounding_tools}
+\input{sections/07_choosing_methods}
+\input{sections/08_glossary}
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

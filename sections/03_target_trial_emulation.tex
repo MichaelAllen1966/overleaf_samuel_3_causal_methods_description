@@ -1,0 +1,86 @@
+% 03_target_trial_emulation.tex
+\section{Method 1: Target trial emulation with exact matching}
+
+\subsection{How it works}
+
+For each treated patient, we find an untreated patient who is identical on the most important confounders, such as age, disease severity and prior disability. We then compare outcomes between the two matched groups. Because each pair looks alike on the factors that drive both treatment and outcome, the untreated partner stands in for what would have happened to the treated patient without treatment.
+
+It is the observational equivalent of a randomised trial in which randomisation is replaced by matching \cite{hernan2016bigdata,stuart2010}. Its strength is transparency: a clinician can see exactly who is compared with whom, and check that the groups look alike.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[node distance=0.75cm]
+\node[box, text width=6cm] (cohort) {\textbf{Eligible cohort}\\ \sub{defined by the target trial protocol}};
+\node[box, text width=4.6cm, below left=0.9cm and -1.6cm of cohort] (treated) {\textbf{Treated patients}\\ \sub{one emulated trial per strategy}};
+\node[box, text width=4.6cm, below right=0.9cm and -1.6cm of cohort] (untreated) {\textbf{Untreated pool}\\ \sub{potential controls}};
+\node[box, text width=12.2cm, below=2.6cm of cohort] (match) {\textbf{Exact matching within strata}\\ \sub{Identical on every matching variable (e.g.\ age band, severity, prior disability)}\\ \sub{One control picked at random with a fixed seed; each control reused at most $k$ times}};
+\node[main, text width=3.6cm, below=0.9cm of match] (pairs) {\textbf{Matched pairs}\\ \footnotesize treated + control};
+\node[box, text width=3.4cm, left=0.8cm of pairs] (unmatched) {\textbf{Unmatched treated}\\ \sub{dropped; \% reported}};
+\node[box, text width=3.6cm, right=0.8cm of pairs] (balance) {\textbf{Balance check}\\ \sub{SMD on unmatched variables}};
+\node[box, text width=8cm, below=0.9cm of pairs] (att) {\textbf{Effect in the treated (ATT)}\\ \sub{mean outcome, treated minus matched controls, with paired CI}};
+\draw[arr] (cohort.south) ++(-1,0) |- ++(0,-0.4) -| (treated.north);
+\draw[arr] (cohort.south) ++(1,0) |- ++(0,-0.4) -| (untreated.north);
+\draw[arr] (treated.south) -- (treated.south |- match.north);
+\draw[arr] (untreated.south) -- (untreated.south |- match.north);
+\draw[arr] (match.south) -- (pairs.north);
+\draw[arr] (unmatched.north |- match.south) -- node[right, note] {no match} (unmatched.north);
+\draw[arr] (pairs.east) -- (balance.west);
+\draw[arr] (pairs.south) -- (att.north);
+\end{tikzpicture}
+\caption{Exact matching workflow. Treated patients without an identical untreated partner are dropped, so the matching rate shows how far the result represents all treated patients.}
+\label{fig:matching}
+\end{figure}
+
+\subsection{Steps}
+
+\begin{enumerate}
+\item \textbf{Define the cohort and strategies} using the target trial protocol. Each treatment strategy (e.g.\ early vs late, drug A vs none) gets its own emulated trial with its own matched controls.
+\item \textbf{Choose matching variables:} a small number (typically 4--6) of strong, pre-treatment confounders. Continuous variables are banded (e.g.\ 5-year age bands) so that exact matches exist.
+\item \textbf{Match exactly.} Within each stratum of identical values, pick an untreated control at random with a fixed seed. Decide whether a control may be reused (e.g.\ up to 3 times) or not (1:1 without replacement); reuse raises the matching rate but makes pairs less independent.
+\item \textbf{Report the matching rate} (percentage of treated patients matched). A low rate means the result applies to a subset of treated patients.
+\item \textbf{Check balance} on variables that were \emph{not} matched, using standardised mean differences (SMD); an absolute SMD below 0.1 is usually taken as good balance \cite{austin2009}. In words, the SMD is how far apart the two groups' averages are, measured in standard deviations, so it can be compared across variables measured in different units:
+\[ \mathrm{SMD} = \frac{\bar{x}_T - \bar{x}_C}{\sqrt{(s_T^2 + s_C^2)/2}} \]
+\item \textbf{Estimate the effect:} difference in outcome proportions (or means) between matched treated and matched controls, with a paired analysis that respects the matching (McNemar's test, paired $t$ or Wilcoxon), or cluster-robust confidence intervals when one control is matched to several treated patients. Adjust for multiplicity (e.g.\ Holm \cite{holm1979}) when many trials are run.
+\end{enumerate}
+
+\subsection{What the result means}
+
+The estimate is the ATT. Each strategy is compared with its own controls, so effects for different strategies describe different kinds of patients and are not a head-to-head comparison.
+
+\subsection{Sensitivity analyses we have used}
+
+\begin{xltabular}{\textwidth}{L{2.6cm}YY}
+\toprule
+\textbf{Group} & \textbf{Analysis} & \textbf{What it tests} \\
+\midrule
+\endhead
+Inference & Paired or cluster-robust CIs (cluster on control) & Pairs that share a reused control are not independent \\
+Randomness & Repeat matching with 20 random seeds; report median, min, max & Dependence on which control was picked at random \\
+Matching design & Control reuse: once, up to 3, up to 5, unlimited & Trade-off between matching rate and independence \\
+Matching design & Reverse the order in which strategies are matched & Order effects when the reuse limit is shared \\
+Matching design & Finer matching (e.g.\ exact score instead of band) & Residual confounding within bands \\
+Matching design & Add further confounders (e.g.\ comorbidities, sex) & Confounding by variables only checked for balance \\
+Matching design & Restrict or match on a key clinical marker recorded for only some patients & Confounding by a strong but incompletely recorded variable \\
+Cohort & Restrict to patients with complete timing data & Misclassification of treatment timing \\
+Cohort & Vary site-volume or provider restrictions & Whether results depend on which centres are included \\
+Cohort & Include or exclude subgroups selected by special investigations & Selection by indication \\
+Cohort & Narrower eligibility windows & Whether untreated patients had a real chance of treatment \\
+Treatment definition & Vary the early/late (or dose) cut-off & Choice of threshold \\
+Time & Landmark analysis (keep only pairs alive and in follow-up at a fixed time) & Immortal-time bias \cite{hernan2016immortal} \\
+Outcome & Stricter and looser outcome definitions; secondary outcomes (death, length of stay, destination) & Dependence on outcome definition; consistency across outcomes \\
+Outcome & Length of stay in survivors only & Separating effects on recovery from effects on survival \\
+Unmeasured confounding & E-values \cite{vanderweele2017evalue}; sensemakr \cite{cinelli2020} on a linear model in the matched sample & How strong a hidden confounder would need to be \\
+Measured confounding & Leave each main matching variable out in turn & How much the result depends on each confounder \\
+\bottomrule
+\end{xltabular}
+
+\subsection{Further analyses that could be run}
+
+\begin{itemize}
+\item \textbf{Coarsened exact \cite{iacus2012} or propensity-score matching \cite{rosenbaum1983,stuart2010}} to include more confounders while keeping most treated patients; compare with exact matching.
+\item \textbf{Regression adjustment within matched pairs} (doubly robust matching) to remove residual imbalance in unmatched variables.
+\item \textbf{Clone-censor-weight designs} \cite{hernan2018duration} for strategies defined by timing, which handle immortal time properly rather than by landmark.
+\item \textbf{Averaging over many matchings} (or reporting the median across seeds) as the primary estimate, so that the result does not depend on one random draw.
+\item \textbf{Negative-control outcomes} (outcomes the treatment cannot affect) to detect residual confounding \cite{lipsitch2010}.
+\item \textbf{Calibration against trial results} in the subgroup that most resembles a randomised trial population.
+\end{itemize}

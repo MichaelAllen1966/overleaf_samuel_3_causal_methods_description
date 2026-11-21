@@ -1,0 +1,93 @@
+% 05_causal_forest.tex
+\section{Method 3: Doubly robust causal forest}
+
+\subsection{How it works}
+
+The method asks: \emph{for patients who look alike, did those who were treated do better than we would have expected?} It works in two stages \cite{chernozhukov2018,wager2018,athey2019}.
+
+In the \textbf{first stage}, two prediction models are built. One predicts each patient's outcome from their characteristics, ignoring treatment. The other predicts each patient's probability of receiving each treatment (the propensity score). Subtracting these predictions from what actually happened leaves two residuals: how much better or worse the outcome was than expected, and how far the treatment differed from what is typical for similar patients. Removing the predictable part of both is how the method adjusts for confounding, including confounding by indication.
+
+In the \textbf{second stage}, a causal forest relates the outcome residuals to the treatment residuals \cite{nie2021,athey2019}, splitting patients into subgroups where the effect differs. As an illustration, a patient predicted to have a 30\% chance of a good outcome who then has one has a large, positive outcome residual. A patient predicted to have a 90\% chance of being treated who is treated has a small treatment residual, because their treatment was unsurprising. The method therefore learns mainly from patients whose treatment was \emph{not} predictable from their characteristics: patients who could reasonably have gone either way, which is where treated and untreated patients are most alike. This gives an estimated effect for every patient (the conditional effect, CATE). The headline estimate then combines both first-stage models in a \textbf{doubly robust} (augmented inverse-probability-weighted, AIPW \cite{robins1994}) average, which is correct if \emph{either} the outcome model or the propensity model is correct, and is only weakly affected by small errors in either. Put simply, because it uses both models, a mistake in one can be compensated by the other.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+\node[box, text width=5.6cm] (data) at (0,0.7) {\textbf{All patients}\\ \sub{effect modifiers $X$, confounders $W$, $T$, $Y$}};
+\node[box, text width=5.4cm] (om) at (-3.2,-2.1) {\textbf{Outcome model}\\ \sub{predicts the outcome from $X$ and $W$}};
+\node[box, text width=5.4cm] (tm) at (3.2,-2.1) {\textbf{Treatment model}\\ \sub{predicts $P$(each treatment) from $X$ and $W$}};
+\node[box, text width=5.4cm] (or) at (-3.2,-3.7) {\textbf{Outcome residual}\\ \sub{observed minus predicted outcome}};
+\node[box, text width=5.4cm] (tr) at (3.2,-3.7) {\textbf{Treatment residual}\\ \sub{received minus predicted treatment}};
+\node[box, text width=5.4cm, minimum height=1.45cm] (forest) at (-3.2,-6.7) {\textbf{Honest causal forest}\\ \sub{relates outcome to treatment residuals}\\ \sub{gives a CATE for every patient}};
+\node[main, text width=5.4cm, minimum height=1.45cm] (aipw) at (3.2,-6.7) {\textbf{Doubly robust ATT (AIPW)}\\ \footnotesize combines both models and the forest\\ \footnotesize correct if either model is correct};
+\node[box, text width=5.4cm] (blp) at (-3.2,-9.0) {\textbf{BLP heterogeneity test}\\ \sub{is variation in CATEs real?}};
+\coordinate (s1top) at ($(om.north)+(0,0.55)$);
+\coordinate (s2top) at ($(forest.north)+(0,0.5)$);
+\begin{scope}[on background layer]
+\node[fill=band, draw=black!30, rounded corners=4pt, inner sep=8pt, fit=(om) (tm) (or) (tr) (s1top), label={[anchor=north, font=\small\bfseries]north:Stage 1: nuisance models}] (s1) {};
+\node[fill=band, draw=black!30, rounded corners=4pt, inner sep=8pt, fit=(forest) (aipw) (s2top), label={[anchor=north west, font=\small\bfseries]north west:Stage 2: effects}] (s2) {};
+\end{scope}
+\draw[arr] (data.south) -- ++(0,-0.35) -| (om.north);
+\draw[arr] (data.south) -- ++(0,-0.35) -| (tm.north);
+\draw[arr] (om) -- (or);
+\draw[arr] (tm) -- (tr);
+\draw[arr] (or.south) -- (forest.north);
+\draw[arr] (tr.south) -- ++(0,-0.55) -| ($(forest.north)+(1.2,0)$);
+\draw[arr] (forest) -- (aipw);
+\draw[arr] (forest.south) -- (blp.north);
+\end{tikzpicture}
+\caption{Two-stage doubly robust causal forest. Stage 1 strips out what can be predicted from patient characteristics; Stage 2 learns the effect from what is left and combines both first-stage models into the headline ATT.}
+\label{fig:forest}
+\end{figure}
+
+\subsection{Steps}
+
+\begin{enumerate}
+\item \textbf{Split variables into two roles.} $X$ are effect modifiers the forest may split on (clinical characteristics). $W$ are additional confounders used only in the first stage (e.g.\ site, calendar year). $X$ is always included in the first stage too. In practice, clinical features go in $X$, and administrative or practice factors such as hospital or year go in $W$.
+\item \textbf{First stage (nuisance models):} gradient-boosted trees (LightGBM \cite{ke2017lightgbm}) for the outcome and for a multiclass treatment model, with cross-fitting (e.g.\ 5 folds) so each patient's predictions come from models trained on others.
+\item \textbf{Second stage:} an honest causal forest (e.g.\ 2,000 trees, minimum leaf size around 25). ``Honest'' means each tree uses half its sample to choose splits and the other half to estimate effects, reducing overfitting \cite{athey2016,wager2018}. We use EconML \texttt{CausalForestDML} \cite{battocchi2019econml}.
+\item \textbf{ATT by AIPW:} for each treated patient, estimate what would have happened without treatment by combining the outcome model's prediction with a correction based on similar untreated patients. Untreated patients who resemble treated ones are given more weight, $P(\text{treatment}) / P(\text{no treatment})$. Very small probabilities are capped (``clipped'', e.g.\ at 0.01) so that no single patient receives an enormous weight. Confidence intervals come from the influence function, a standard formula for this estimator. Avoid unclipped built-in estimators: tiny propensities give enormous weights and implausible results.
+\item \textbf{Other estimates:} ATE only where overlap is good across the whole cohort (e.g.\ fewer than 20\% of patients below the clip); risk ratio in the treated; mean CATE among the treated (no CI, because individual estimates share trees).
+\item \textbf{Heterogeneity:} the best linear predictor (BLP) test \cite{chernozhukov2025} regresses the doubly robust effect on the forest's out-of-bag CATE. A slope above 0 means real variation in benefit is detected; near 1 means the individual estimates are well calibrated. In plain terms, it checks whether patients the forest predicts will benefit more really do benefit more. If the slope is weak, report subgroup ATTs with a test of equal effects, not individual CATEs.
+\end{enumerate}
+
+\subsection{What the result means}
+
+The AIPW ATT is the most reliable estimate from this method. Individual CATEs are noisy; use them to describe patterns, not to make decisions about individual patients, unless the BLP test supports it. Check first-stage discrimination and calibration, and overlap (the share of treated patients with very low probability of no treatment).
+
+\subsection{Sensitivity analyses we have used}
+
+\begin{xltabular}{\textwidth}{L{2.6cm}YY}
+\toprule
+\textbf{Group} & \textbf{Analysis} & \textbf{What it tests} \\
+\midrule
+\endhead
+Overlap & Distribution of $P$(no treatment) among treated; \% below 0.05 and 0.01 \cite{crump2009} & Whether comparable untreated patients exist \\
+Overlap & Exclude patients with $P$(no treatment) $< 0.05$ & Dependence on extreme weights \\
+Randomness & Several random seeds & Cross-fitting splits, subsampling, forest randomness \\
+Model specification & Smaller first-stage models & First-stage complexity \\
+Model specification & Larger minimum leaf size & Forest settings \\
+Model specification & Alternative categorical encoding of $X$ and $W$ & Encoding errors \\
+Cross-fitting & Folds grouped by site & Whether predictions generalise to unseen sites \\
+Confounder set & Without site & Reliance on adjusting for local practice \\
+Confounder set & Add timing variables (e.g.\ time to first assessment) and calendar year & Whether a variable that drives treatment timing should be adjusted for \\
+Confounder set & Add an incompletely recorded clinical marker (missing as its own category) & Confounding by a strong but partly recorded variable \\
+Treatment definition & Vary early/late or dose cut-offs & Choice of threshold \\
+Cohort & Narrower eligibility windows; vary site-volume restriction & Dependence on population \\
+Outcome & Stricter and looser definitions & Dependence on outcome definition \\
+Cross-method & Compare subgroup ATTs with the matched target trial emulation & Agreement across different assumptions \\
+Unmeasured confounding & E-values (RR from observed treated proportion $p_1$ and $p_1 - \mathrm{ATT}$) \cite{vanderweele2017evalue}; sensemakr \cite{cinelli2020} on a linear model with the same confounders & How strong a hidden confounder would need to be \\
+Measured confounding & Leave each main confounder out in turn and refit & How much the result depends on each confounder \\
+\bottomrule
+\end{xltabular}
+
+\subsection{Further analyses that could be run}
+
+\begin{itemize}
+\item \textbf{Policy learning:} use the CATEs to derive and evaluate a simple treatment rule (e.g.\ a shallow policy tree), with honest out-of-sample evaluation \cite{athey2021}.
+\item \textbf{Calibration of CATEs} by quantile groups (group average treatment effects, GATES) and classification analysis (CLAN) to describe who benefits most \cite{chernozhukov2025}.
+\item \textbf{Alternative doubly robust estimators} (DR-learner \cite{kennedy2023}, targeted maximum likelihood estimation \cite{vanderlaan2006}) for comparison.
+\item \textbf{Continuous treatment} (e.g.\ time or dose) using a continuous-treatment DML model \cite{chernozhukov2018}, rather than fixed categories.
+\item \textbf{Instrumental-variable forest} using between-site variation \cite{athey2019,baiocchi2014}, to address unmeasured patient-level confounding.
+\item \textbf{Negative-control outcomes and exposures} \cite{lipsitch2010}.
+\item \textbf{Transportability:} re-weight the ATT to a target population (e.g.\ a trial population or another region) \cite{dahabreh2019}.
+\end{itemize}

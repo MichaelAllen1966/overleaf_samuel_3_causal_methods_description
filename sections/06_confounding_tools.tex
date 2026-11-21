@@ -1,0 +1,35 @@
+% 06_confounding_tools.tex
+\section{Shared tools for confounding}\label{sec:shared}
+
+Three tools are applied with every method. E-values and sensemakr ask \emph{how strong would a hidden confounder need to be?} Leave-one-out asks \emph{how much does the result actually depend on the confounders we have?} In our experience leave-one-out is often the most revealing, because it shows which single variable the result rests on.
+
+\subsection{E-values}
+
+The E-value \cite{vanderweele2017evalue} is the minimum strength of association, on the risk-ratio scale, that an unmeasured confounder would need with \textbf{both} the treatment and the outcome to fully explain away the estimate. Report it for the point estimate and for the confidence limit closest to no effect (an E-value of 1 means the CI already includes no effect). For example, an E-value of 2 means that a hidden factor would need to make treatment twice as likely \emph{and} a good outcome twice as likely, over and above the measured factors, to explain the whole effect away.
+\[ E = RR + \sqrt{RR \times (RR - 1)} \qquad (\text{for } RR < 1, \text{ use } 1/RR) \]
+
+\begin{xltabular}{\textwidth}{L{3.4cm}Y}
+\toprule
+\textbf{Method} & \textbf{Risk ratio used} \\
+\midrule
+Matching & Proportion with outcome in treated / in matched controls \\
+S-learner & $RR \approx \sqrt{OR}$ for common outcomes (more than about 15\%) \cite{vanderweele2017sqrt}, OR from the mean log-odds shift \\
+Causal forest & $p_1 / (p_1 - \mathrm{ATT})$, where $p_1$ is the observed treated proportion \\
+\bottomrule
+\end{xltabular}
+
+Rough guide (our working convention, not a published threshold): an E-value below about 1.5 means modest hidden confounding could explain the result; above 2.5--3 needs a confounder stronger than most measured ones. Judge against the strength of the measured confounders in your domain.
+
+\subsection{Sensemakr}
+
+In plain terms, sensemakr asks how much of the unexplained variation in who was treated, and in who did well, a hidden factor would need to account for to wipe out the effect. It then compares that with known factors such as disease severity, giving a clinically meaningful yardstick: ``a hidden factor as strong as severity would (or would not) overturn the result''. Formally, sensemakr \cite{cinelli2020} describes a hidden confounder by how much of the remaining variance in treatment and in outcome it would explain (partial $R^2$). It needs a linear model, so for each method we fit a linear probability model as a stand-in (outcome $\sim$ treated + the method's confounders) and report:
+\begin{itemize}
+\item \textbf{Robustness value $RV$:} partial $R^2$ a confounder needs with both treatment and outcome to bring the estimate to zero; \textbf{$RV_\alpha$:} to make it non-significant.
+\item \textbf{Benchmark bounds:} the adjusted estimate if a confounder were 1$\times$, 2$\times$ or 3$\times$ as strong as a named measured covariate (e.g.\ the main severity score).
+\item \textbf{Contour plot} of the adjusted estimate over the two partial $R^2$ values, with benchmarks marked.
+\end{itemize}
+Caveats: after exact matching, matched variables are nearly unrelated to treatment, so benchmarks against them understate their importance. The Python package (PySensemakr 0.0.8) is incompatible with pandas 3; we implement the formulas directly and validate against the package's published Darfur example.
+
+\subsection{Leave-one-out of measured confounders}
+
+Remove each of the strongest measured confounders in turn (from the matching variables, or from the model features) and re-estimate. This is a deliberate misspecification: the change shows how much bias a confounder of similar strength, acting in the same direction, could cause. Interpret the direction too: if omitting a confounder makes the treatment look worse, unmeasured confounders of the same kind (e.g.\ unrecorded aspects of severity) would probably bias the estimate against treatment. Where a specific unmeasured confounder can be named, a formal quantitative bias analysis can complement these tools \cite{lash2014}.

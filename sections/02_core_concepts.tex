@@ -1,0 +1,58 @@
+% 02_core_concepts.tex
+\section{Core concepts}
+
+A treatment effect is the difference between what happened to a patient and what \emph{would} have happened to the same patient had their treatment been different. We only ever see one of these, so every method builds the missing one (the counterfactual) from similar patients \cite{hernan2020whatif}.
+
+\subsection{The target trial}
+
+Before any analysis, write down the randomised trial you would run if you could. This makes every design choice explicit and stops common errors such as comparing groups defined at different times. Use this protocol table at the start of every analysis \cite{hernan2016bigdata,hernan2025,cashin2025}. Aligning eligibility, treatment assignment and the start of follow-up at time zero prevents immortal-time and related selection biases \cite{hernan2016immortal}.
+
+\begin{xltabular}{\textwidth}{L{4cm}Y}
+\toprule
+\textbf{Component} & \textbf{What to specify} \\
+\midrule
+Eligibility & Who could have received either treatment at time zero \\
+Treatment strategies & The treatment(s), including timing or dose, and the comparator (often ``no treatment'') \\
+Assignment & In a trial, random. In observational data, replaced by adjustment for confounders \\
+Time zero & When eligibility is met and follow-up starts. It must be the same for both arms \\
+Follow-up and outcome & What is measured, and when \\
+Causal contrast & Which estimand (below) \\
+Analysis & How the contrast is estimated, and how uncertainty is quantified \\
+\bottomrule
+\end{xltabular}
+
+\subsection{Estimands: what exactly are we estimating?}
+
+An \emph{estimand} is the precise quantity an analysis sets out to estimate: which effect, in which patients, on which scale. Stating it up front makes clear what question the result answers. The three estimands used in this guide are:
+
+\begin{xltabular}{\textwidth}{L{3.2cm}YY}
+\toprule
+\textbf{Estimand} & \textbf{Question it answers} & \textbf{When to prefer it} \\
+\midrule
+ATT: average effect in the treated & How much did treatment help the patients who actually received it? & Evaluating current practice; needs comparable untreated patients for each treated patient only \\
+ATE: average effect in everyone & What if everyone eligible were treated? & Policy questions about extending treatment; needs every type of patient to have some chance of treatment \\
+CATE: conditional effect & How does the effect vary with patient characteristics? & Targeting treatment; individual estimates are noisy and need validating \\
+\bottomrule
+\end{xltabular}
+
+Our default is the \textbf{ATT}, reported as an absolute difference in the probability of the outcome (percentage points), with a relative effect (risk ratio) alongside. In clinical terms, the ATT asks ``did treatment help the patients we chose to treat?'', whereas the ATE asks ``what would happen if we treated everyone eligible?''.
+
+\subsection{Assumptions every method needs}
+
+\begin{xltabular}{\textwidth}{L{3.4cm}YY}
+\toprule
+\textbf{Assumption} & \textbf{Plain meaning} & \textbf{How we check it} \\
+\midrule
+No unmeasured confounding (exchangeability) & Once we account for the measured variables, treated and untreated patients are comparable & Cannot be proven; probed with E-values \cite{vanderweele2017evalue}, sensemakr \cite{cinelli2020} and leave-one-out \\
+Positivity (overlap) & Each type of treated patient has comparable untreated patients & Percentage matched; propensity score distributions \cite{rosenbaum1983}; trimming \cite{crump2009} \\
+Consistency & ``Treatment'' means the same thing for everyone in a group & Define strategies precisely (e.g.\ by timing or dose); vary definitions \\
+No interference & One patient's treatment does not change another's outcome & Usually assumed in individual-level clinical data \\
+Correct timing & Covariates are measured before treatment; time zero is the same in both arms & Design review; landmark analyses \cite{hernan2016immortal} \\
+\bottomrule
+\end{xltabular}
+
+In practice the first assumption is the weakest. Clinicians often decide on treatment using information that is never recorded, such as how unwell a patient looks, their wishes or imaging findings. If that information also predicts outcome, every method will be biased. This is why each method section includes sensitivity analyses for unmeasured confounding.
+
+\subsection{Choosing confounders}
+
+Adjust for variables that affect both treatment and outcome and are measured before treatment. Do \textbf{not} adjust for variables on the pathway from treatment to outcome (mediators), or for variables that only determine treatment timing when timing is part of the strategy, because that removes part of the effect being estimated. Draw a directed acyclic graph (DAG) to decide each variable's role \cite{hernan2020whatif}, and test borderline variables as sensitivity analyses.

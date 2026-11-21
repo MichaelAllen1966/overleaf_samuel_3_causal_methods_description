@@ -1,0 +1,38 @@
+% 07_choosing_methods.tex
+\section{Choosing and combining methods}
+
+Run at least two of the three methods on every question, and treat close agreement as the main sign that a result is robust. Where they disagree, look first at which confounders each method adjusts for, and at overlap.
+
+\begin{xltabular}{\textwidth}{YL{3.6cm}Y}
+\toprule
+\textbf{Question} & \textbf{Best suited} & \textbf{Why} \\
+\midrule
+Does the treatment work, explained to clinicians? & Target trial emulation & Transparent pairs and balance tables \\
+How does benefit change with time to treatment or dose? & S-learner & Treatment enters as a continuous feature \\
+Which patients benefit most? & Causal forest (with BLP test) & Designed for heterogeneity, with a check that it is real \\
+Many confounders, some only weakly related to outcome & Causal forest or S-learner & Matching cannot include many variables exactly \\
+Small treated group & Matching (with seed variation) or causal forest & Report seed variation; S-learner may shrink small-arm effects \\
+Strong confounder recorded for only some patients & All three, as a sensitivity analysis & Restrict, or add with missing as its own category \\
+\bottomrule
+\end{xltabular}
+
+\subsection{Recommended workflow}
+
+\begin{enumerate}
+\item Write the target trial protocol and draw a DAG; decide the role of each variable, especially timing variables.
+\item Define the cohort so that untreated patients could genuinely have been treated (same eligibility window and time zero).
+\item Run diagnostics before reading effects: matching rate and balance; model discrimination and calibration; overlap.
+\item Estimate the ATT with at least two methods; report absolute and relative effects with honest CIs (paired, bootstrap or influence-function).
+\item Run the sensitivity analyses listed for each method, changing one choice at a time, and the three shared confounding tools.
+\item Compare methods in one table, and explain any disagreement.
+\item Report using the TARGET statement \cite{cashin2025} for the emulation and TRIPOD \cite{collins2015tripod} for model performance.
+\end{enumerate}
+
+\subsection{Practical conventions}
+
+\begin{itemize}
+\item Keep every analysis choice (cut-offs, outcome definition, seeds, thresholds) in one settings block, so each sensitivity analysis changes one line.
+\item Fix random seeds, and report variation across seeds rather than one seed.
+\item Save every table to CSV as it is produced; long refits should save as they go.
+\item Describe methods before each code block and results after, so notebooks double as the methods record.
+\end{itemize}

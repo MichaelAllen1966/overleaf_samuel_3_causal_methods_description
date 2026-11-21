@@ -1,0 +1,95 @@
+% 04_s_learner.tex
+\section{Method 2: S-learner}
+
+\subsection{How it works}
+
+We train one machine-learning model (the ``single learner'' \cite{kunzel2019}) to predict each patient's outcome from their characteristics \emph{and} the treatment they received. Once the model has learned how outcomes depend on both, we ask it a ``what if'' question for each treated patient: \emph{what would this patient's predicted outcome be if they had not been treated?} The difference between the two predictions is that patient's estimated benefit. Averaging over treated patients gives the ATT.
+
+A useful way to think of it is as a very detailed risk calculator that includes treatment as one of its inputs. We enter each treated patient's details twice, once with their treatment and once with treatment switched off, and read off the difference in predicted risk.
+
+Because treatment is just another input, the model can represent treatment as a continuous quantity, such as time to treatment or dose. This makes the S-learner the natural tool for questions like ``how quickly does benefit fall with delay?''
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+\node[box, text width=4cm] (data) at (0,0) {\textbf{All patients}\\ \sub{confounders $X$, treatment $T$, outcome $Y$}};
+\node[box, text width=4cm] (train) at (5.6,0) {\textbf{Train one model $f(X,T)$}\\ \sub{XGBoost, tuned by log loss, cross-fitted (5 folds)}};
+\node[font=\footnotesize\bfseries\color{black!60}, anchor=west] at (-2.2,-1.45) {For each treated patient};
+\node[box, text width=4cm] (in1) at (0,-2.4) {\textbf{$X$, $T$ as received}\\ \sub{patient's own treatment}};
+\node[box, text width=4cm] (in0) at (0,-4.0) {\textbf{$X$, $T$ set to none}\\ \sub{treatment switched off}};
+\node[box, text width=3cm, minimum height=2.7cm] (model) at (5.6,-3.2) {\textbf{Same model $f$}\\ \sub{applied twice}};
+\node[box, text width=3.2cm] (p1) at (10.4,-2.4) {\textbf{Predicted $p_1$}\\ \sub{outcome if treated}};
+\node[box, text width=3.2cm] (p0) at (10.4,-4.0) {\textbf{Predicted $p_0$}\\ \sub{outcome if untreated}};
+\node[main, text width=4.4cm] (ben) at (9.6,-6.0) {\textbf{Benefit $= p_1 - p_0$}\\ \footnotesize one estimate per treated patient};
+\node[box, text width=4.8cm] (att) at (3.2,-6.0) {\textbf{Average over treated = ATT}\\ \sub{bootstrap the whole pipeline for CIs}};
+\draw[arr] (data) -- (train);
+\draw[arr] (train) -- node[right, note] {fitted model} (model);
+\draw[arr] (in1.east) -- (in1.east -| model.west);
+\draw[arr] (in0.east) -- (in0.east -| model.west);
+\draw[arr] (p1.west -| model.east) -- (p1.west);
+\draw[arr] (p0.west -| model.east) -- (p0.west);
+\draw[arr] (p0.south) -- (p0.south |- ben.north);
+\draw[arr] (p1.east) -- ++(0.35,0) |- (ben.east);
+\draw[arr] (ben.west) -- (att.east);
+\end{tikzpicture}
+\caption{S-learner counterfactual prediction. The only thing that changes between the two predictions is the treatment input, so their difference is the model's estimate of what treatment did for that patient.}
+\label{fig:slearner}
+\end{figure}
+
+\subsection{Steps}
+
+\begin{enumerate}
+\item \textbf{Features:} all measured pre-treatment confounders, plus treatment. Treatment can be a category (e.g.\ strategy arms) or continuous (e.g.\ time to treatment, with a sentinel value far outside the real range meaning ``not given'').
+\item \textbf{Model:} gradient-boosted trees (XGBoost \cite{chen2016xgboost}), which capture non-linear effects and interactions. Categorical variables such as site can be handled natively.
+\item \textbf{Tuning:} choose hyperparameters by cross-validated \textbf{log loss} (e.g.\ with Optuna \cite{akiba2019optuna}), not accuracy or AUC, because log loss penalises over-confident wrong predictions and so rewards probabilities that match reality. Do not use class weighting (artificially up-weighting the rarer outcome): it pushes predicted probabilities away from the true risks.
+\item \textbf{Cross-fitting:} split patients into folds (e.g.\ 5). Each fold is predicted by a model trained on the others, so no patient's prediction comes from a model that saw them.
+\item \textbf{Counterfactual prediction:} for each treated patient, predict with treatment as received and with treatment set to ``none''. Benefit = difference, on the probability scale (percentage points) and log-odds scale.
+\item \textbf{Summarise:} mean benefit per treatment group (ATT); benefit against continuous treatment (e.g.\ regression of benefit on time, giving the slope and the time at which benefit reaches zero). With intercept $a$ and slope $b$, the zero point and its delta-method variance are
+\[ x_0 = -\frac{a}{b}, \qquad \mathrm{Var}(x_0) = \frac{\mathrm{Var}(a)}{b^2} + \frac{a^2\,\mathrm{Var}(b)}{b^4} - \frac{2a\,\mathrm{Cov}(a,b)}{b^3}. \]
+In words: fit a straight line of predicted benefit against delay; where the line crosses zero is the delay beyond which the model predicts no benefit. If that point lies beyond the treatment times actually seen in the data, it is an extrapolation and should be reported as such.
+\item \textbf{Uncertainty:} bootstrap the whole pipeline (refit on resampled data). Confidence intervals from the spread of individual benefits are far too narrow and must not be reported as uncertainty.
+\item \textbf{Heterogeneity:} fit a ``meta-model'' to the individual benefits and explain it with SHAP \cite{lundberg2017shap}, which shows how much each patient characteristic pushes predicted benefit up or down, to describe who benefits more or less.
+\end{enumerate}
+
+\subsection{What the result means}
+
+The estimate is only as good as the outcome model. Check discrimination (out-of-fold AUC: how well the model ranks patients by risk) and, more importantly, calibration (whether a predicted 30\% chance really corresponds to about 30\% of such patients having the outcome; summarised by a calibration slope near 1, intercept near 0, and deciles close to the diagonal), because effects are differences between predicted probabilities \cite{vancalster2019}. Report both following TRIPOD \cite{collins2015tripod}. The meta-model only describes the S-learner's own estimates; it cannot find variation the S-learner missed.
+
+A known weakness: if the model gives little weight to the treatment feature (for example, under heavy regularisation), estimated effects shrink towards zero \cite{kunzel2019}.
+
+\subsection{Sensitivity analyses we have used}
+
+\begin{xltabular}{\textwidth}{L{2.6cm}YY}
+\toprule
+\textbf{Group} & \textbf{Analysis} & \textbf{What it tests} \\
+\midrule
+\endhead
+Overlap & Propensity model for treatment; distribution by arm; \% outside 0.05--0.95 & Whether treated patients have comparable untreated patients \\
+Overlap & Re-estimate after trimming propensities outside 0.05--0.95 \cite{crump2009} & Dependence on extrapolation \\
+Randomness & Different cross-validation seeds & Dependence on fold allocation \\
+Uncertainty & Bootstrap of the whole pipeline & Model uncertainty \\
+Model specification & Default (untuned) settings, with and without class weighting & Effect of tuning and of class weighting on calibration and effect size \\
+Model specification & Fixed, heavily regularised model & Model flexibility \\
+Model specification & Logistic regression S-learner (main effects) & Model class; no interactions \\
+Confounder set & Without site / provider & Reliance on adjusting for local practice \\
+Treatment definition & Vary early/late or dose cut-offs & Choice of threshold \\
+Cohort & Restrict to more severe patients; narrower eligibility windows; previously independent patients only & Dependence on population \\
+Outcome & Stricter and looser definitions & Dependence on outcome definition \\
+Unmeasured confounding & E-values \cite{vanderweele2017evalue} (with $RR \approx \sqrt{OR}$ for common outcomes \cite{vanderweele2017sqrt}) & How strong a hidden confounder would need to be \\
+Unmeasured confounding & Sensemakr \cite{cinelli2020} on a linear probability model (arm vs all untreated) & Same, on the explained-variance scale, with measured benchmarks \\
+Measured confounding & Leave each main confounder out in turn and refit & How much the result depends on each confounder \\
+\bottomrule
+\end{xltabular}
+
+\subsection{Further analyses that could be run}
+
+\begin{itemize}
+\item \textbf{Other meta-learners:} T-learner (separate treated and untreated models), X-learner \cite{kunzel2019} and DR-learner \cite{kennedy2023}, which avoid the S-learner's shrinkage towards zero.
+\item \textbf{Nested tuning} (re-tuning inside each training fold) to remove the small optimism from tuning on all patients.
+\item \textbf{Placebo tests:} randomly reassign treatment times among treated patients; any time gradient should disappear.
+\item \textbf{Negative-control outcomes} that the treatment cannot affect but share confounders \cite{lipsitch2010}.
+\item \textbf{Instrumental variable analysis} using between-site variation in treatment rates, which under its own assumptions addresses unmeasured patient-level confounding \cite{baiocchi2014}.
+\item \textbf{Quantitative bias analysis} for a named unmeasured confounder, using plausible prevalences and effect sizes \cite{lash2014}.
+\item \textbf{Multiple imputation} of missing covariates, compared with the model's native handling of missing values.
+\item \textbf{Comparison with trial evidence} in the subgroup most like a trial population.
+\end{itemize}
