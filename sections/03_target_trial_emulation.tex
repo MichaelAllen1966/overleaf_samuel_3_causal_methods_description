@@ -74,10 +74,43 @@ Measured confounding & Leave each main matching variable out in turn & How much 
 \bottomrule
 \end{xltabular}
 
+\subsection{Non-exact matching}\label{sec:tte_nonexact}
+
+Exact matching works well for a few confounders, but each extra variable splits patients into smaller strata, and treated patients with no identical untreated patient are lost. Continuous variables such as age or stroke severity have to be matched exactly or in bands, which leaves some imbalance within bands. Non-exact matching relaxes ``identical'' to ``close enough'', so that more confounders can be included. The target trial protocol (eligibility, treatment strategies, time zero, outcome) is unchanged; only the way treated and untreated patients are made comparable changes.
+
+Common approaches are:
+\begin{itemize}
+\item \textbf{Propensity-score matching} \cite{rosenbaum1983,austin2011}: model each patient's probability of treatment from all the confounders, then match on that single score, within a caliper (a maximum allowed difference, often 0.2 standard deviations of the log-odds of the score).
+\item \textbf{Mahalanobis distance matching}: match on a distance that combines several continuous variables, allowing for their scales and correlations. It is often combined with exact matching on a few key categorical variables and a propensity-score caliper \cite{stuart2010}.
+\item \textbf{Full matching} \cite{hansen2006}: divide patients into subclasses, each with at least one treated and one untreated patient, chosen to make the subclasses as alike as possible. Every eligible patient is used, with weights.
+\item \textbf{Risk-set matching} \cite{li2001riskset}: for strategies defined by the timing of treatment, match each patient treated at time $t$ to a patient still untreated and still eligible at time $t$, so that both arms share the same time zero.
+\end{itemize}
+
+Weighting methods, such as inverse probability weighting, overlap weights \cite{li2018overlap} and entropy balancing \cite{hainmueller2012}, have the same aim without discarding patients, and are a natural comparison. Whichever method is used, it should be chosen by the balance it achieves (absolute SMD below 0.1 for every confounder) and the proportion of treated patients it keeps, not fixed in advance \cite{stuart2010,austin2009}. Regression adjustment in the matched sample (doubly robust matching) removes the imbalance that remains \cite{abadie2006}.
+
+\paragraph{Advantages over exact matching.}
+\begin{itemize}
+\item Many more confounders can be included, such as comorbidities, and continuous variables do not need to be banded.
+\item More treated patients are usually matched, so the result applies to more of the treated population.
+\item It remains transparent: matched patients can be inspected and balance tabulated.
+\item Well-established software is available (for example MatchIt, WeightIt and cobalt in R).
+\end{itemize}
+
+\paragraph{Disadvantages.}
+\begin{itemize}
+\item Matched patients are only similar, not identical, so balance must be checked and remaining differences may need regression adjustment.
+\item Results depend on the propensity model and on choices such as the caliper and distance measure, which gives more room for analytic choices to influence the result.
+\item Propensity-score matching without a caliper can make balance worse rather than better \cite{king2019}.
+\item A caliper can drop treated patients with no close match, which changes who the result applies to.
+\item It is harder to explain to clinicians: ``an untreated patient with a similar predicted chance of treatment'' is less intuitive than ``an identical untreated patient''.
+\item Confidence intervals must allow for the matching, for example with cluster-robust or Abadie--Imbens standard errors \cite{abadie2006}.
+\item Like exact matching, it does not deal with unmeasured confounding, and (apart from risk-set matching) it does not fix problems with time zero.
+\end{itemize}
+
 \subsection{Further analyses that could be run}
 
 \begin{itemize}
-\item \textbf{Coarsened exact \cite{iacus2012} or propensity-score matching \cite{rosenbaum1983,stuart2010}} to include more confounders while keeping most treated patients; compare with exact matching.
+\item \textbf{Non-exact matching} (Section~\ref{sec:tte_nonexact}) or coarsened exact matching \cite{iacus2012} to include more confounders while keeping most treated patients; compare with exact matching.
 \item \textbf{Regression adjustment within matched pairs} (doubly robust matching) to remove residual imbalance in unmatched variables.
 \item \textbf{Clone-censor-weight designs} \cite{hernan2018duration} for strategies defined by timing, which handle immortal time properly rather than by landmark.
 \item \textbf{Averaging over many matchings} (or reporting the median across seeds) as the primary estimate, so that the result does not depend on one random draw.

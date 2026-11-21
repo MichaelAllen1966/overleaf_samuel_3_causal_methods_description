@@ -5,6 +5,9 @@ Plain-language definitions of the technical terms used in this guide, in alphabe
 
 \begin{description}[style=nextline, leftmargin=1.2em, itemsep=3pt, font=\normalfont\bfseries]
 
+\item[Abadie--Imbens standard error]
+A standard error for matching estimators that allows for the matching itself, including controls used more than once.
+
 \item[AIPW (augmented inverse-probability weighting)]
 A doubly robust estimator that combines an outcome model with propensity-score weights. It corrects the outcome model's predictions using weighted residuals, so the estimate is correct if either model is correct.
 
@@ -37,6 +40,9 @@ Repeating the whole analysis on many samples drawn with replacement from the dat
 
 \item[Calibration]
 Agreement between predicted probabilities and observed outcome rates. A well-calibrated model that predicts 30\% risk sees the outcome in about 30\% of such patients. Summarised by the calibration intercept (ideally 0) and slope (ideally 1).
+
+\item[Caliper]
+The largest difference allowed between a treated patient and their match, usually on the propensity score. Treated patients with no untreated patient within the caliper are left unmatched.
 
 \item[CATE (conditional average treatment effect)]
 The average effect for patients with a given set of characteristics. Estimated for each patient by the causal forest and the S-learner; also called the individual or heterogeneous treatment effect.
@@ -125,6 +131,9 @@ A characteristic across which the size of the treatment effect varies (in the ca
 \item[Eligibility criteria]
 The conditions a patient must meet at time zero to be included in a trial or emulated trial.
 
+\item[Entropy balancing]
+A weighting method that chooses weights for untreated patients so that the means (and, optionally, variances) of the confounders exactly equal those of the treated patients.
+
 \item[Estimand]
 The precise quantity an analysis aims to estimate: which effect, in which population, on which scale (for example, the ATT as a difference in percentage points).
 
@@ -148,6 +157,9 @@ One of the equal parts into which data are split for cross-validation or cross-f
 
 \item[Follow-up]
 The period from time zero over which outcomes are recorded.
+
+\item[Full matching]
+Matching that places every eligible patient in a subclass with at least one treated and one untreated patient, and uses weights, so that no eligible patient is discarded.
 
 \item[GATES and CLAN]
 Group average treatment effects (GATES) compare average effects across groups defined by predicted benefit; classification analysis (CLAN) describes the characteristics of the most and least affected groups.
@@ -203,6 +215,9 @@ A measure of probabilistic prediction error that penalises confident wrong predi
 \item[Log-odds]
 The logarithm of the odds, $\log\{p/(1-p)\}$. Effects on this scale are log odds ratios.
 
+\item[Mahalanobis distance]
+A measure of how far apart two patients are on several variables at once, allowing for the scale of each variable and the correlations between them.
+
 \item[Matching rate]
 The percentage of treated patients for whom a matched control was found.
 
@@ -233,11 +248,17 @@ Filling in missing values several times by drawing from a model of the missing d
 \item[Multiplicity]
 The increased chance of false-positive findings when many statistical tests are carried out.
 
+\item[Nearest-neighbour matching]
+Matching each treated patient to the untreated patient closest to them on a distance measure, such as the propensity score or Mahalanobis distance.
+
 \item[Negative control]
 An outcome that the treatment cannot affect, or an exposure that cannot affect the outcome. An apparent effect on a negative control signals residual confounding or bias.
 
 \item[Nested tuning]
 Repeating hyperparameter tuning inside each training fold, so that the chosen settings never see the patients they are evaluated on.
+
+\item[Non-exact matching]
+Matching treated patients to untreated patients who are similar but not identical, using a distance measure, a propensity score or both (Section~\ref{sec:tte_nonexact}).
 
 \item[Nuisance model]
 A model needed to estimate the effect but not itself of interest, such as the outcome and propensity models in the first stage of double machine learning.
@@ -266,6 +287,9 @@ A prediction for a patient made by a model trained on other folds of the data (s
 \item[Overfitting]
 When a model learns noise in the training data, so that it performs well on those data but poorly on new data.
 
+\item[Overlap weights]
+Propensity-score weights that give most weight to patients who could plausibly have received either treatment and little to those almost certain to receive one, which avoids extreme weights.
+
 \item[Paired analysis]
 An analysis that compares outcomes within matched pairs, such as McNemar's test, the paired $t$-test or the Wilcoxon signed-rank test.
 
@@ -292,6 +316,9 @@ Expressing effects as differences in the probability of the outcome (in percenta
 
 \item[Propensity score]
 A patient's probability of receiving a treatment given their characteristics.
+
+\item[Propensity-score matching]
+Matching treated and untreated patients on their propensity scores, rather than on each confounder separately.
 
 \item[Protocol]
 The written specification of a trial or emulated trial: eligibility, strategies, assignment, time zero, follow-up, outcomes, causal contrast and analysis.
@@ -328,6 +355,9 @@ Removing the part of a variable that can be predicted from covariates, leaving o
 
 \item[Risk ratio (RR)]
 The proportion with the outcome in treated patients divided by the proportion in untreated patients.
+
+\item[Risk-set matching]
+Matching each patient treated at a given time to a patient who is still untreated and still eligible at that time. Used when treatment strategies are defined by the timing of treatment.
 
 \item[Robustness value (RV)]
 In sensemakr, the minimum partial $R^2$ an unmeasured confounder would need with both treatment and outcome to reduce the estimate to zero ($RV_\alpha$: to make it no longer statistically significant).
