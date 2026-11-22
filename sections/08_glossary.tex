@@ -8,35 +8,53 @@ Plain-language definitions of the technical terms used in this guide, in alphabe
 \item[Abadie--Imbens standard error]
 A standard error for matching estimators that allows for the matching itself, including controls used more than once.
 
-\item[AIPW (augmented inverse-probability weighting)]
-A doubly robust estimator that combines an outcome model with propensity-score weights. It corrects the outcome model's predictions using weighted residuals, so the estimate is correct if either model is correct.
+\item[AIPW]
+See \emph{\hyperref[gl:aipw]{Augmented inverse-probability weighting (AIPW)}}.
+
+\item[Area under the ROC curve (AUC)]\phantomsection\label{gl:auc}
+A measure of discrimination: the probability that a model gives a higher predicted risk to a randomly chosen patient with the outcome than to one without it. 0.5 is no better than chance; 1 is perfect.
 
 \item[Arm]
 One of the groups compared in a trial or emulated trial, such as the treated arm and the untreated (control) arm.
 
-\item[ATE (average treatment effect)]
+\item[ATE]
+See \emph{\hyperref[gl:ate]{Average treatment effect (ATE)}}.
+
+\item[ATT]
+See \emph{\hyperref[gl:att]{Average treatment effect in the treated (ATT)}}.
+
+\item[AUC]
+See \emph{\hyperref[gl:auc]{Area under the ROC curve (AUC)}}.
+
+\item[Augmented inverse-probability weighting (AIPW)]\phantomsection\label{gl:aipw}
+A doubly robust estimator that combines an outcome model with propensity-score weights. It corrects the outcome model's predictions using weighted residuals, so the estimate is correct if either model is correct.
+
+\item[Average treatment effect (ATE)]\phantomsection\label{gl:ate}
 The average effect if everyone in the population received the treatment, compared with no one receiving it.
 
-\item[ATT (average treatment effect in the treated)]
+\item[Average treatment effect in the treated (ATT)]\phantomsection\label{gl:att}
 The average effect of treatment among the patients who actually received it: how their outcomes compare with what would have happened to them without treatment. Our default estimand.
-
-\item[AUC (area under the ROC curve)]
-A measure of discrimination: the probability that a model gives a higher predicted risk to a randomly chosen patient with the outcome than to one without it. 0.5 is no better than chance; 1 is perfect.
 
 \item[Balance]
 How similar treated and untreated groups are on baseline characteristics, usually measured by the standardised mean difference.
 
-\item[BART (Bayesian additive regression trees)]
+\item[BART]
+See \emph{\hyperref[gl:bart]{Bayesian additive regression trees (BART)}}.
+
+\item[Bayesian additive regression trees (BART)]\phantomsection\label{gl:bart}
 A Bayesian model that predicts the outcome as the sum of many small decision trees. Used to estimate treatment effects and their uncertainty (Section~\ref{sec:other_methods}).
 
 \item[Benchmark bounds]
 In sensemakr, the adjusted estimate if an unmeasured confounder were one, two or three times as strongly related to treatment and outcome as a named measured covariate.
 
+\item[Best linear predictor (BLP) test]\phantomsection\label{gl:blp}
+A check on heterogeneity: the doubly robust effect for each patient is regressed on the model's predicted individual effect. A slope above 0 means real variation in benefit has been detected; a slope near 1 means the individual predictions are well calibrated.
+
 \item[Bias]
 A systematic difference between an estimate and the true value that does not shrink as the sample grows.
 
-\item[BLP (best linear predictor) test]
-A check on heterogeneity: the doubly robust effect for each patient is regressed on the model's predicted individual effect. A slope above 0 means real variation in benefit has been detected; a slope near 1 means the individual predictions are well calibrated.
+\item[BLP]
+See \emph{\hyperref[gl:blp]{Best linear predictor (BLP) test}}.
 
 \item[Bootstrap]
 Repeating the whole analysis on many samples drawn with replacement from the data, to estimate how much the result would vary from sample to sample. Used to build confidence intervals.
@@ -47,14 +65,20 @@ Agreement between predicted probabilities and observed outcome rates. A well-cal
 \item[Caliper]
 The largest difference allowed between a treated patient and their match, usually on the propensity score. Treated patients with no untreated patient within the caliper are left unmatched.
 
-\item[CATE (conditional average treatment effect)]
-The average effect for patients with a given set of characteristics. Estimated for each patient by the causal forest and the S-learner; also called the individual or heterogeneous treatment effect.
+\item[CATE]
+See \emph{\hyperref[gl:cate]{Conditional average treatment effect (CATE)}}.
 
 \item[Causal forest]
 A random forest adapted to estimate treatment effects rather than outcomes. Each tree splits patients into groups whose treatment effects differ.
 
 \item[CausalForestDML]
 The EconML class that fits a causal forest within the double machine learning framework.
+
+\item[CI]
+See \emph{\hyperref[gl:ci]{Confidence interval (CI)}}.
+
+\item[CLAN]
+See \emph{\hyperref[gl:gates]{Group average treatment effects (GATES) and classification analysis (CLAN)}}.
 
 \item[Class weighting]
 Giving more weight to the rarer outcome class when training a classifier. It improves accuracy-type metrics but distorts predicted probabilities, so it is avoided when effects are computed from probabilities.
@@ -77,7 +101,10 @@ The strategy that treatment is compared against, often ``no treatment''.
 \item[Complier]
 In an instrumental-variable analysis, a patient whose treatment depends on the instrument: they would be treated with one value of the instrument but not with another. Instrumental-variable estimates apply to compliers.
 
-\item[Confidence interval (CI)]
+\item[Conditional average treatment effect (CATE)]\phantomsection\label{gl:cate}
+The average effect for patients with a given set of characteristics. Estimated for each patient by the causal forest and the S-learner; also called the individual or heterogeneous treatment effect.
+
+\item[Confidence interval (CI)]\phantomsection\label{gl:ci}
 A range of values, calculated from the data, that would contain the true value in a stated proportion (usually 95\%) of repeated studies.
 
 \item[Confounder]
@@ -107,8 +134,8 @@ Splitting the data into folds and predicting each fold with a model trained on t
 \item[Cross-validation]
 Splitting the data into folds, training on some and testing on the rest in turn, to estimate how well a model performs on new data or to choose its settings.
 
-\item[DAG (directed acyclic graph)]
-A diagram of assumed causal relationships between variables, used to decide which variables to adjust for.
+\item[DAG]
+See \emph{\hyperref[gl:dag]{Directed acyclic graph (DAG)}}.
 
 \item[Decile]
 One of ten equal-sized groups formed by ranking patients, for example by predicted risk.
@@ -119,14 +146,23 @@ An approximation for the variance of a function of estimated quantities, such as
 \item[Difference-in-differences]
 Estimating the effect of a change by comparing the change in outcomes over time in places that made it with the change in places that did not.
 
+\item[Directed acyclic graph (DAG)]\phantomsection\label{gl:dag}
+A diagram of assumed causal relationships between variables, used to decide which variables to adjust for.
+
 \item[Discrimination]
 How well a model separates patients who have the outcome from those who do not, usually measured by the AUC.
 
-\item[DML (double/debiased machine learning)]
+\item[DML]
+See \emph{\hyperref[gl:dml]{Double/debiased machine learning (DML)}}.
+
+\item[Double/debiased machine learning (DML)]\phantomsection\label{gl:dml}
 A framework that estimates causal effects using machine-learning nuisance models, with cross-fitting and residualisation so that errors in the nuisance models have only a small effect on the final estimate.
 
-\item[Doubly robust]
+\item[Doubly robust]\phantomsection\label{gl:dr}
 An estimator that remains consistent if either the outcome model or the treatment (propensity) model is correctly specified, not necessarily both.
+
+\item[DR]
+See \emph{\hyperref[gl:dr]{Doubly robust}}.
 
 \item[DR-learner]
 A meta-learner that estimates individual effects by regressing doubly robust pseudo-outcomes on patient characteristics.
@@ -173,14 +209,17 @@ The period from time zero over which outcomes are recorded.
 \item[Full matching]
 Matching that places every eligible patient in a subclass with at least one treated and one untreated patient, and uses weights, so that no eligible patient is discarded.
 
-\item[GATES and CLAN]
-Group average treatment effects (GATES) compare average effects across groups defined by predicted benefit; classification analysis (CLAN) describes the characteristics of the most and least affected groups.
+\item[GATES]
+See \emph{\hyperref[gl:gates]{Group average treatment effects (GATES) and classification analysis (CLAN)}}.
 
 \item[G-formula (g-computation)]
 Estimating a treatment effect by modelling the outcome, predicting each patient's outcome under each treatment strategy, and averaging the predictions. The S-learner is a version of this for treatment at a single time.
 
 \item[Gradient boosting]
 A machine-learning method that builds many small decision trees in sequence, each correcting the errors of the previous ones (implemented in XGBoost and LightGBM).
+
+\item[Group average treatment effects (GATES) and classification analysis (CLAN)]\phantomsection\label{gl:gates}
+Group average treatment effects (GATES) compare average effects across groups defined by predicted benefit; classification analysis (CLAN) describes the characteristics of the most and least affected groups.
 
 \item[Heterogeneity (of treatment effect)]
 Variation in the size of the treatment effect between patients or subgroups.
@@ -209,8 +248,11 @@ When one patient's treatment affects another patient's outcome. Most analyses as
 \item[Interrupted time series]
 Estimating the effect of a change by comparing the trend in outcomes before and after it.
 
-\item[Inverse probability weighting]
+\item[Inverse probability weighting (IPW)]\phantomsection\label{gl:ipw}
 Weighting each patient by the inverse of their probability of receiving the treatment they actually received, so that the weighted groups resemble each other.
+
+\item[IPW]
+See \emph{\hyperref[gl:ipw]{Inverse probability weighting (IPW)}}.
 
 \item[Landmark analysis]
 Restricting an analysis to patients still alive and in follow-up at a fixed time after time zero, as a crude check on immortal-time bias.
@@ -287,7 +329,7 @@ A model needed to estimate the effect but not itself of interest, such as the ou
 \item[Observational data]
 Data collected during routine care or in registries, where treatment was not assigned at random.
 
-\item[Odds ratio (OR)]
+\item[Odds ratio (OR)]\phantomsection\label{gl:or}
 The ratio of the odds of the outcome in treated versus untreated patients. It is further from 1 than the risk ratio when the outcome is common.
 
 \item[Omitted variable bias]
@@ -298,6 +340,9 @@ The amount by which a model's performance on the data used to build it overstate
 
 \item[Optuna]
 A Python library for hyperparameter tuning that searches efficiently and stops unpromising trials early.
+
+\item[OR]
+See \emph{\hyperref[gl:or]{Odds ratio (OR)}}.
 
 \item[Out-of-bag estimate]
 In a forest, a prediction for a patient made only by the trees that did not use that patient in their training sample.
@@ -356,11 +401,14 @@ Estimating how much a specified source of bias, such as a named unmeasured confo
 \item[Random forest]
 A prediction method that averages many decision trees, each grown on a random sample of patients and features.
 
-\item[Randomised controlled trial (RCT)]
+\item[Randomised controlled trial (RCT)]\phantomsection\label{gl:rct}
 A study in which treatment is assigned by chance, so that treated and untreated groups are comparable on average in both measured and unmeasured characteristics.
 
 \item[Random seed]
 A number that fixes the sequence of random choices in an analysis, so that results can be reproduced.
+
+\item[RCT]
+See \emph{\hyperref[gl:rct]{Randomised controlled trial (RCT)}}.
 
 \item[Regression adjustment]
 Including covariates in a regression model of the outcome to remove remaining differences between groups.
@@ -380,7 +428,7 @@ Confounding that remains after adjustment, for example because a variable was gr
 \item[Residualisation]
 Removing the part of a variable that can be predicted from covariates, leaving only its residual.
 
-\item[Risk ratio (RR)]
+\item[Risk ratio (RR)]\phantomsection\label{gl:rr}
 The proportion with the outcome in treated patients divided by the proportion in untreated patients.
 
 \item[Risk-set matching]
@@ -389,8 +437,17 @@ Matching each patient treated at a given time to a patient who is still untreate
 \item[R-learner]
 A meta-learner that estimates individual treatment effects from the residuals of the outcome and treatment models, which makes it robust to errors in those models.
 
-\item[Robustness value (RV)]
+\item[Robustness value (RV)]\phantomsection\label{gl:rv}
 In sensemakr, the minimum partial $R^2$ an unmeasured confounder would need with both treatment and outcome to reduce the estimate to zero ($RV_\alpha$: to make it no longer statistically significant).
+
+\item[ROC]
+See \emph{\hyperref[gl:auc]{Area under the ROC curve (AUC)}}.
+
+\item[RR]
+See \emph{\hyperref[gl:rr]{Risk ratio (RR)}}.
+
+\item[RV]
+See \emph{\hyperref[gl:rv]{Robustness value (RV)}}.
 
 \item[Selection by indication]
 When the patients who undergo a test or receive a treatment are chosen because of their clinical features, so they differ systematically from those who do not.
@@ -404,17 +461,29 @@ Repeating an analysis with one choice or assumption changed, to see whether the 
 \item[Sentinel value]
 A value far outside the real range (for example, 99,999 minutes) used to code ``treatment not given'' in a continuous variable.
 
-\item[SHAP (SHapley Additive exPlanations)]
+\item[SHAP]
+See \emph{\hyperref[gl:shap]{SHapley Additive exPlanations (SHAP)}}.
+
+\item[SHapley Additive exPlanations (SHAP)]\phantomsection\label{gl:shap}
 A method that attributes a model's prediction for each patient to the contributions of individual features.
 
 \item[S-learner (single learner)]
 A meta-learner that fits one model to predict outcome from characteristics and treatment, then estimates effects by changing the treatment input.
 
-\item[SMD (standardised mean difference)]
-The difference in means between two groups divided by their pooled standard deviation; absolute values below 0.1 usually indicate good balance.
+\item[SMD]
+See \emph{\hyperref[gl:smd]{Standardised mean difference (SMD)}}.
+
+\item[SSNAP]
+Sentinel Stroke National Audit Programme: the national audit of stroke care in England, Wales and Northern Ireland, and the source of the data analysed in the SAMueL-3 project.
+
+\item[Standard deviation]
+A measurement of the typical distance between individual numbers in a set and their average, showing how spread out the data is in the same units as the original numbers. To calculate it, find the variance, the average of the squared distances from the mean, and then take its square root.
 
 \item[Standard error]
 The estimated standard deviation of an estimate across repeated samples; used to build confidence intervals.
+
+\item[Standardised mean difference (SMD)]\phantomsection\label{gl:smd}
+The difference in means between two groups divided by their pooled standard deviation; absolute values below 0.1 usually indicate good balance.
 
 \item[Stratum (plural strata)]
 A subgroup of patients who share the same values of the stratifying (for example, matching) variables.
@@ -424,6 +493,9 @@ A method that combines several machine-learning models, weighted by their cross-
 
 \item[Synthetic control]
 A weighted combination of places (such as regions or hospitals) without a change, chosen to match a changed place's outcomes before the change, and used as its comparison afterwards.
+
+\item[Targeted maximum likelihood estimation (TMLE)]\phantomsection\label{gl:tmle}
+A doubly robust method that updates an initial outcome model in a targeted way to reduce bias in the effect estimate.
 
 \item[TARGET statement]
 Reporting guidance for observational studies that emulate a target trial.
@@ -440,8 +512,8 @@ Confounding by factors that change during follow-up and may themselves be affect
 \item[T-learner (two learner)]
 A meta-learner that fits separate outcome models for treated and untreated patients and takes the difference in their predictions.
 
-\item[TMLE (targeted maximum likelihood estimation)]
-A doubly robust method that updates an initial outcome model in a targeted way to reduce bias in the effect estimate.
+\item[TMLE]
+See \emph{\hyperref[gl:tmle]{Targeted maximum likelihood estimation (TMLE)}}.
 
 \item[Transportability]
 Re-weighting an effect estimate so that it applies to a different target population, such as a trial population or another region.
@@ -457,6 +529,9 @@ Reporting guidance for studies that develop or validate prediction models.
 
 \item[Unmeasured confounding]
 Confounding by variables that are not recorded in the data, which no adjustment method can remove directly.
+
+\item[Variance]
+A measure how spread out a set of numbers is from their average, showing whether the values are tightly clustered near the middle or scattered far apart. To calculate it, find the average of the numbers, measure how far each number sits from that average, square those distances so negatives do not cancel out, and then take the average of those squared distances.
 
 \item[Wilcoxon signed-rank test]
 A non-parametric test comparing paired continuous measurements.
